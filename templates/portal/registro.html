@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white"><h4>Registro de Usuario</h4></div>
+            <div class="card-body">
+                {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="reg_username" class="form-label">Nombre de Usuario:</label>
+                        <input id="reg_username" type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reg_email" class="form-label">Correo Electrónico:</label>
+                        <input id="reg_email" type="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reg_password" class="form-label">Contraseña (mín. 12 caracteres):</label>
+                        <input id="reg_password" type="password" name="password" class="form-control" minlength="12" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reg_rol" class="form-label">Rol (RBAC):</label>
+                        <select id="reg_rol" name="rol" class="form-select">
+                            <option value="ADMINISTRADOR">Administrador</option>
+                            <option value="RECEPCIONISTA" selected>Recepcionista</option>
+                            <option value="ASEO">Personal de Aseo</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reg_macrozona" class="form-label">Macrozona Asignada:</label>
+                        <select id="reg_macrozona" name="macrozona" class="form-select">
+                            <option value="COSTERA">Zona Costera Central</option>
+                            <option value="SUR">Zona Sur de Lagos y Archipiélago</option>
+                            <option value="TODAS">Todas las Macrozonas</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Registrarse y Entrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

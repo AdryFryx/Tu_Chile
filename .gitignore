@@ -1,0 +1,19 @@
+# Entorno virtual
+venv/
+.venv/
+
+# Variables de entorno y secretos (ISO A.8.28)
+.env
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs y bases de datos locales
+*.log
+*.sqlite3
+
+# Editores / IDE
+.vscode/
+.idea/

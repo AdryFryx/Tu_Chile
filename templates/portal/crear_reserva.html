@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white"><h4>Generar Reserva (Sin Overbooking)</h4></div>
+            <div class="card-body">
+                {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="unidad_id" class="form-label">Seleccionar Unidad:</label>
+                        <select id="unidad_id" name="unidad_id" class="form-select" required>
+                            {% for u in unidades %}
+                                <option value="{{ u.id }}">{{ u.nombre }} [{{ u.get_tipo_display }} - {{ u.ubicacion }}] — ${{ u.precio_base_noche }}/noche</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="checkin" class="form-label">Fecha Check-in:</label>
+                            <input id="checkin" type="date" name="checkin" class="form-control" required>
+                        </div>
+                        <div class="col">
+                            <label for="checkout" class="form-label">Fecha Check-out:</label>
+                            <input id="checkout" type="date" name="checkout" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="temporada" class="form-label">Temporada (Tarifa Dinámica):</label>
+                        <select id="temporada" name="temporada" class="form-select">
+                            <option value="BAJA">Temporada Baja (x1.00)</option>
+                            <option value="ALTA">Temporada Alta / Verano (x1.35)</option>
+                            <option value="FIESTAS_PATRIAS">Fiestas Patrias / Fin de Semana Largo (x1.50)</option>
+                        </select>
+                    </div>
+                    <hr>
+                    <h6>Datos del Pasajero (Cifrados con AES-256 en BD)</h6>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nombre Completo:</label>
+                            <input type="text" name="nombre_pasajero" class="form-control" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">RUT o Pasaporte:</label>
+                            <input type="text" name="rut_pasajero" class="form-control" placeholder="12.345.678-9" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Correo Electrónico:</label>
+                            <input type="email" name="email_pasajero" class="form-control" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Teléfono:</label>
+                            <input type="text" name="telefono_pasajero" class="form-control" placeholder="+56912345678">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-info text-white w-100">Reservar e Ir al Abono (50%)</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

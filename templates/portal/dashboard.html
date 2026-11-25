@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">Panel Principal PMS</h2>
+        <small class="text-muted">Rol: <strong>{{ rol }}</strong> | Macrozona: <strong>{{ macrozona }}</strong></small>
+    </div>
+    <div class="d-flex gap-2">
+        {% if rol == "ADMINISTRADOR" or rol == "RECEPCIONISTA" %}
+            <a href="{% url 'crear_reserva' %}" class="btn btn-primary">+ Nueva Reserva</a>
+        {% endif %}
+        {% if rol == "ADMINISTRADOR" %}
+            <a href="{% url 'exportar_caja' %}?formato=xlsx" class="btn btn-success">Exportar Caja (.xlsx)</a>
+            <a href="{% url 'exportar_caja' %}?formato=pdf" class="btn btn-danger">Exportar Caja (.pdf)</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if rol == "ADMINISTRADOR" %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">Crear Unidad de Alojamiento (Patrón Factory Method)</div>
+    <div class="card-body">
+        <form method="POST" action="{% url 'crear_unidad' %}" class="row g-2 align-items-end">
+            {% csrf_token %}
+            <div class="col-md-2">
+                <label class="form-label">Tipo</label>
+                <select name="tipo" class="form-select">
+                    <option value="CABANA">Cabaña</option>
+                    <option value="HABITACION">Habitación</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Nombre</label>
+                <input type="text" name="nombre" class="form-control" placeholder="Ej: Cabaña Sol" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Macrozona</label>
+                <select name="macrozona" class="form-select">
+                    <option value="COSTERA">Costera</option>
+                    <option value="SUR">Sur</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Ubicación</label>
+                <input type="text" name="ubicacion" class="form-control" placeholder="El Quisco / Pucón" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Precio Base</label>
+                <input type="number" name="precio_base" class="form-control" value="60000" required>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">Cap.</label>
+                <input type="number" name="capacidad" class="form-control" value="4" required>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-dark w-100">Crear</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-5">
+        <h4>Unidades de Alojamiento (Patrón State)</h4>
+        <ul class="list-group shadow-sm">
+            {% for u in unidades %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ u.nombre }}</strong>
+                            <span class="badge bg-secondary">{{ u.get_tipo_display }}</span><br>
+                            <small class="text-muted">{{ u.ubicacion }} ({{ u.macrozona }}) — ${{ u.precio_base_noche }}/noche</small>
+                        </div>
+                        <span class="badge {% if u.estado == 'DISPONIBLE' %}bg-success{% elif u.estado == 'OCUPADA' %}bg-primary{% elif u.estado == 'SUCIO' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                            {{ u.estado }}
+                        </span>
+                    </div>
+
+                    {% if rol == "ADMINISTRADOR" or rol == "ASEO" %}
+                        <div class="mt-2">
+                            {% if u.estado == "SUCIO" %}
+                                <form method="POST" action="{% url 'cambiar_estado_aseo' u.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="accion" value="iniciar_limpieza">
+                                    <button type="submit" class="btn btn-sm btn-warning">Iniciar Limpieza</button>
+                                </form>
+                            {% elif u.estado == "LIMPIEZA" %}
+                                <form method="POST" action="{% url 'cambiar_estado_aseo' u.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="accion" value="habilitar">
+                                    <button type="submit" class="btn btn-sm btn-success">Marcar Disponible</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">No hay unidades registradas aún.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {% if rol == "ADMINISTRADOR" or rol == "RECEPCIONISTA" %}
+    <div class="col-md-7">
+        <h4>Reservas Activas (PII Enmascarado — ISO A.8.11)</h4>
+        <ul class="list-group shadow-sm">
+            {% for r in reservas %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Reserva #{{ r.id }}</strong> — {{ r.unidad.nombre }} ({{ r.temporada }})<br>
+                            <small>Pasajero: {{ r.pasajero.nombre_completo }} | RUT: <code>{{ r.pasajero.rut_enmascarado }}</code> | Email: <code>{{ r.pasajero.email_enmascarado }}</code></small><br>
+                            <small class="text-muted">{{ r.fecha_checkin }} al {{ r.fecha_checkout }} | Total: ${{ r.total_estadia }} | Saldo: ${{ r.saldo_pendiente }}</small>
+                        </div>
+                        <span class="badge bg-info text-dark">{{ r.estado }}</span>
+                    </div>
+
+                    <div class="mt-2 d-flex gap-2 align-items-center flex-wrap">
+                        {% if r.estado == "PENDIENTE" %}
+                            <a href="{% url 'pago_reserva' r.id %}" class="btn btn-sm btn-warning">Pagar Abono (50%)</a>
+                        {% elif r.estado == "CONFIRMADA" %}
+                            <form method="POST" action="{% url 'checkin_reserva' r.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-primary">Realizar Check-in</button>
+                            </form>
+                        {% elif r.estado == "CHECKIN" %}
+                            <form method="POST" action="{% url 'checkout_reserva' r.id %}" class="d-flex gap-1 align-items-center">
+                                {% csrf_token %}
+                                <input type="number" name="costo_extra" class="form-control form-control-sm" style="width: 110px;" placeholder="Extra $" value="0">
+                                <input type="text" name="descripcion_dano" class="form-control form-control-sm" style="width: 160px;" placeholder="Daño/Menaje (opc.)">
+                                <button type="submit" class="btn btn-sm btn-danger">Check-out</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">No hay reservas registradas.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

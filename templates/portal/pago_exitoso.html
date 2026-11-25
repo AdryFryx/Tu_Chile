@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="alert alert-success text-center shadow-sm">
+    <h2>¡Abono Procesado Exitosamente!</h2>
+    <p>La reserva #{{ reserva.id }} ({{ reserva.unidad.nombre }}) ha sido <strong>CONFIRMADA</strong> con un abono de <strong>${{ monto }} CLP</strong>.</p>
+    <p class="text-muted">Saldo pendiente para el Check-in: ${{ reserva.saldo_pendiente }} CLP</p>
+    <a href="{% url 'dashboard' %}" class="btn btn-primary">Volver al Dashboard</a>
+</div>
+{% endblock %}
